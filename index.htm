@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>古靈精怪故事機 - 🗣️🤯👻</title>
+    <title>古靈精怪emoji機 - 🗣️🤯👻</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -58,10 +58,10 @@
     <!-- 頂部區塊 -->
     <header class="w-full max-w-4xl text-center mb-4 mt-2">
         <h1 class="text-3xl md:text-4xl font-extrabold text-amber-900 tracking-tight drop-shadow-sm mb-1.5">
-            🗣️🤯👻 古靈精怪故事機
+            🗣️🤯👻 古靈精怪emoji機
         </h1>
         <p class="text-xs md:text-sm text-amber-800 font-medium max-w-xl mx-auto opacity-90 leading-relaxed px-2">
-            點擊骰子逐個揭曉，拼湊出一個天馬行空的故事吧！
+            點擊骰子逐個揭曉，拼湊出一個天馬行空的句子或故事吧！
         </p>
     </header>
 
@@ -106,7 +106,7 @@
 
     <!-- 遊戲邏輯 -->
     <script>
-        // 語音列表：/tsh-/ 叉音 (目標音)
+        // 語音列表：/tsh-/ 叉音 (原目標音)
         const targetSounds = [
             { emoji: '🦒', name: '長頸鹿' },
             { emoji: '🪲', name: '甲蟲' },
@@ -136,20 +136,20 @@
             { emoji: '🐹', name: '倉鼠' }
         ];
 
-        // 其他聲音（用於創造性和故事發展）
+        // 主要練習詞：/ts-/ 聲母 (現在將大量出現在格子中)
         const otherSounds = [
             { emoji: '🫘', name: '種子' },
             { emoji: '🌱', name: '種植' },
-            { emoji: '🧅', name: '粽子' },
+            { emoji: '🍙🌿', name: '粽子' },
             { emoji: '📄', name: '紙張' },
-            { emoji: '🧂', name: '自己' },
+            { emoji: '🙋', name: '自己' },
             { emoji: '🟣', name: '紫糯米' },
-            { emoji: '🧻', name: '紙巾' },
+            { emoji: '🤧', name: '紙巾' },
             { emoji: '➡️', name: '直接' },
             { emoji: '🧠', name: '知道' },
             { emoji: '🧀', name: '芝士' },
             { emoji: '💜', name: '紫色' },
-            { emoji: '🧴', name: '廁紙' },
+            { emoji: '🧻', name: '廁紙' },
             { emoji: '🌵', name: '仙人掌' },
             { emoji: '🧋', name: '珍珠奶茶' },
             { emoji: '🧃', name: '果汁' },
@@ -178,13 +178,13 @@
             { emoji: '🥪', name: '三文治' },
             { emoji: '🍫', name: '朱古力' },
             { emoji: '🍪', name: '朱古力曲奇餅' },
-            { emoji: '🍩', name: '朱古力味' },
+            { emoji: '🍩', name: '朱古力味甜甜圈' },
             { emoji: '🍇', name: '提子' },
             { emoji: '🫑', name: '青椒' },
             { emoji: '🥀', name: '凋謝' },
             { emoji: '🧭', name: '指南針' },
             { emoji: '🗽', name: '自由神像' },
-            { emoji: '🌳', name: '樹枝' }
+            { emoji: '🌳', name: '樹上的樹枝' }
         ];
 
         // Web Audio 合成器（用於音效）
@@ -258,18 +258,20 @@
         }
 
         // 骰子資料生成：
-        // - 容易模式 (Easy Mode): 9格。至少 6 或 7 個必須是目標音。
-        // - 困難模式 (Hard Mode): 4格。至少 3 個必須是目標音。
+        // - 容易模式 (Easy Mode): 9格。至少 8 個必須是 /ts-/ 的 list 詞彙。
+        // - 困難模式 (Hard Mode): 4格。至少 3 個必須是 /ts-/ 的 list 詞彙。
         function generateSlotsData(mode) {
             const numSlots = mode === 'easy' ? 9 : 4;
-            const minTargets = mode === 'easy' ? 6 : 3;
             
-            let targetCount = minTargets;
+            // 容易模式：otherSounds 佔 8 或 9 格；困難模式：otherSounds 佔 3 或 4 格
+            let otherCount;
             if (mode === 'easy') {
-                targetCount = Math.random() < 0.5 ? 6 : 7;
+                otherCount = Math.random() < 0.5 ? 8 : 9;
+            } else {
+                otherCount = Math.random() < 0.5 ? 3 : 4;
             }
 
-            const otherCount = numSlots - targetCount;
+            const targetCount = numSlots - otherCount;
 
             function getRandomElements(sourceArray, count) {
                 const shuffled = [...sourceArray].sort(() => 0.5 - Math.random());
@@ -277,9 +279,10 @@
             }
 
             const allTargets = targetSounds.map(item => ({ ...item, type: 'target' }));
+            const allOthers = otherSounds.map(item => ({ ...item, type: 'other' }));
             
             const targetsSelected = getRandomElements(allTargets, targetCount);
-            const othersSelected = getRandomElements(otherSounds.map(item => ({ ...item, type: 'other' })), otherCount);
+            const othersSelected = getRandomElements(allOthers, otherCount);
 
             const combined = [...targetsSelected, ...othersSelected];
             const finalShuffled = combined.sort(() => 0.5 - Math.random());
@@ -309,10 +312,10 @@
                 const card = document.createElement('div');
                 
                 if (slot.revealed) {
-                    // 根據是否為目標音設定背景色
+                    // 將主要練習的 otherSounds (type: 'other') 標註為柔和粉玫瑰色
                     let bgCol = "bg-white border-amber-200";
-                    if (slot.type === 'target') {
-                        bgCol = "bg-rose-50/70 border-rose-200"; // 目標音顯示柔和玫瑰色
+                    if (slot.type === 'other') {
+                        bgCol = "bg-rose-50/70 border-rose-200"; // 柔和玫瑰色背景高亮
                     }
 
                     const emojiSizeClass = currentMode === 'easy' ? 'text-5xl sm:text-6xl md:text-7xl' : 'text-6xl sm:text-7xl md:text-8xl';
@@ -322,6 +325,7 @@
                     
                     card.innerHTML = `
                         <div class="${emojiSizeClass} emoji-pop drop-shadow-sm" title="${slot.name}">${slot.emoji}</div>
+                        <span class="absolute bottom-1.5 text-[9px] font-semibold text-slate-500 bg-white/80 px-1 rounded-md border border-slate-100">${slot.name}</span>
                     `;
                 } else if (slot.rolling) {
                     card.className = "flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl bg-amber-50 border-2 md:border-4 border-amber-400/80 roll-anim shadow-inner transition-all w-full";
