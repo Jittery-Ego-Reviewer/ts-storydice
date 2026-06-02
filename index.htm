@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>古靈精怪故事機 - 🗣️🤯👻</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght=300..700&family=Noto+Sans+TC:wght=400;500;700;900&display=swap');
+        
+        body {
+            font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+            background-color: #FEFBEA; /* 柔和的黃色背景 */
+        }
+
+        /* 表情符號 3D 彈出動畫 */
+        @keyframes pop-in {
+            0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+            70% { transform: scale(1.1) rotate(5deg); }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+
+        .emoji-pop {
+            animation: pop-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.15) forwards;
+        }
+
+        /* 骰子旋轉動畫效果 */
+        @keyframes roll {
+            0% { transform: translateY(0); }
+            20% { transform: translateY(-6px); }
+            40% { transform: translateY(10px); }
+            60% { transform: translateY(-4px); }
+            80% { transform: translateY(2px); }
+            100% { transform: translateY(0); }
+        }
+
+        .roll-anim {
+            animation: roll 0.5s cubic-bezier(0.45, 0, 0.55, 1);
+        }
+
+        /* 未開啟骰子的搖晃效果（提示點擊） */
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-2deg); }
+            75% { transform: rotate(2deg); }
+        }
+
+        .wiggle-hover:hover {
+            animation: wiggle 0.3s ease infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-start p-3 md:p-6 text-slate-800">
+
+    <!-- 頂部區塊 -->
+    <header class="w-full max-w-4xl text-center mb-4 mt-2">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-amber-900 tracking-tight drop-shadow-sm mb-1.5">
+            🗣️🤯👻 古靈精怪故事機
+        </h1>
+        <p class="text-xs md:text-sm text-amber-800 font-medium max-w-xl mx-auto opacity-90 leading-relaxed px-2">
+            點擊骰子逐個揭曉，拼湊出一個天馬行空的故事吧！
+        </p>
+    </header>
+
+    <!-- 主要內容容器 -->
+    <main class="w-full max-w-4xl bg-white/70 backdrop-blur-md rounded-2xl p-4 md:p-6 shadow-lg border-2 md:border-4 border-amber-200/50 flex-grow flex flex-col justify-between">
+        
+        <!-- 遊戲控制與模式選擇 -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4 pb-4 border-b-2 border-dashed border-amber-100">
+            <!-- 模式切換 -->
+            <div class="flex bg-amber-100/60 p-1 rounded-xl w-full sm:w-auto">
+                <button id="btn-easy" onclick="setMode('easy')" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 shadow-sm bg-white text-amber-900">
+                    <span class="text-base">🌟</span>
+                    容易模式 (9格)
+                </button>
+                <button id="btn-hard" onclick="setMode('hard')" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 text-amber-700 hover:bg-amber-200/50">
+                    <span class="text-base">🔥</span>
+                    困難模式 (4格)
+                </button>
+            </div>
+
+            <!-- 操作按鈕 -->
+            <div class="flex gap-2 w-full sm:w-auto">
+                <button onclick="resetGame()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold px-4 py-2 rounded-xl transition-all duration-300 shadow-sm">
+                    <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                    重新開始
+                </button>
+                <button id="btn-reveal-all" onclick="revealAll()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold px-4 py-2 rounded-xl transition-all duration-300 shadow-sm">
+                    <i data-lucide="sparkles" class="w-4 h-4"></i>
+                    全開！
+                </button>
+            </div>
+        </div>
+
+        <!-- 骰子網格區域 -->
+        <div class="flex-grow flex items-center justify-center py-4">
+            <div id="slots-grid" class="grid gap-3 md:gap-4 w-full max-w-2xl justify-center items-center">
+                <!-- 動態生成的骰子將放在這裡 -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 遊戲邏輯 -->
+    <script>
+        // 語音列表：/tsh-/ 叉音 (目標音)
+        const targetSounds = [
+            { emoji: '🦒', name: '長頸鹿' },
+            { emoji: '🪲', name: '甲蟲' },
+            { emoji: '👮', name: '警察' },
+            { emoji: '🏋️', name: '舉重' },
+            { emoji: '🛒', name: '購物車' },
+            { emoji: '📏', name: '間尺' },
+            { emoji: '🍵', name: '茶' },
+            { emoji: '🤡', name: '小丑' },
+            { emoji: '🐛', name: '毛毛蟲' },
+            { emoji: '🐞', name: '瓢蟲' },
+            { emoji: '🎢', name: '過山車' },
+            { emoji: '🕶️', name: '黑超' },
+            { emoji: '🔨', name: '鐵鎚' },
+            { emoji: '🧲', name: '磁石' },
+            { emoji: '🔌', name: '插蘇' },
+            { emoji: '🧋', name: '珍珠奶茶' },
+            { emoji: '🧅', name: '洋葱' },
+            { emoji: '🚵', name: '騎單車' },
+            { emoji: '🪽', name: '翅膀' },
+            { emoji: '🚽', name: '廁所' },
+            { emoji: '🫖', name: '茶壺' },
+            { emoji: '🍴', name: '刀叉' },
+            { emoji: '🥄', name: '匙羹' },
+            { emoji: '🧑‍🍳', name: '廚師' },
+            { emoji: '🦔', name: '刺蝟' },
+            { emoji: '🐹', name: '倉鼠' }
+        ];
+
+        // 其他聲音（用於創造性和故事發展）
+        const otherSounds = [
+            { emoji: '🌵', name: '仙人掌' },
+            { emoji: '🧑‍⚕️', name: '醫生' },
+            { emoji: '🥑', name: '牛油果' },
+            { emoji: '🦛', name: '河馬' },
+            { emoji: '🐖', name: '豬' },
+            { emoji: '🐘', name: '大象' },
+            { emoji: '🐊', name: '鱷魚' },
+            { emoji: '🐢', name: '烏龜' },
+            { emoji: '🐬', name: '海豚' },
+            { emoji: '🦚', name: '孔雀' },
+            { emoji: '🦉', name: '貓頭鷹' },
+            { emoji: '🦋', name: '蝴蝶' },
+            { emoji: '💃', name: '跳舞' },
+            { emoji: '🛝', name: '滑梯' },
+            { emoji: '💣', name: '炸彈' },
+            { emoji: '🗑️', name: '垃圾桶' },
+            { emoji: '🍓', name: '士多啤梨' }
+        ];
+
+        // Web Audio 合成器（用於音效）
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'roll') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.12);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.12);
+            } else if (type === 'reveal') {
+                const now = audioCtx.currentTime;
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.08);
+                osc.frequency.setValueAtTime(783.99, now + 0.16);
+                osc.frequency.setValueAtTime(1046.50, now + 0.24);
+                
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                
+                osc.start();
+                osc.stop(now + 0.35);
+            } else if (type === 'click') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.04);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.04);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.04);
+            }
+        }
+
+        // 遊戲狀態
+        let currentMode = 'easy'; // 預設為容易模式（9格）
+        let gameState = [];       // 保存每個骰子狀態的陣列
+        let isAllRevealing = false; // 是否正在執行「全開」的標記
+
+        // 模式更改設定
+        function setMode(mode) {
+            if (isAllRevealing) return; // 防止在全開過程中更改模式
+            playSound('click');
+            currentMode = mode;
+            
+            const btnEasy = document.getElementById('btn-easy');
+            const btnHard = document.getElementById('btn-hard');
+            
+            if (mode === 'easy') {
+                btnEasy.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 shadow-sm bg-white text-amber-900";
+                btnHard.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 text-amber-700 hover:bg-amber-200/50";
+            } else {
+                btnHard.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 shadow-sm bg-white text-amber-900";
+                btnEasy.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 text-amber-700 hover:bg-amber-200/50";
+            }
+
+            resetGame();
+        }
+
+        // 骰子資料生成：
+        // - 容易模式 (Easy Mode): 9格。至少 6 或 7 個必須是目標音。
+        // - 困難模式 (Hard Mode): 4格。至少 3 個必須是目標音。
+        function generateSlotsData(mode) {
+            const numSlots = mode === 'easy' ? 9 : 4;
+            const minTargets = mode === 'easy' ? 6 : 3;
+            
+            let targetCount = minTargets;
+            if (mode === 'easy') {
+                targetCount = Math.random() < 0.5 ? 6 : 7;
+            }
+
+            const otherCount = numSlots - targetCount;
+
+            function getRandomElements(sourceArray, count) {
+                const shuffled = [...sourceArray].sort(() => 0.5 - Math.random());
+                return shuffled.slice(0, count);
+            }
+
+            const allTargets = targetSounds.map(item => ({ ...item, type: 'target' }));
+            
+            const targetsSelected = getRandomElements(allTargets, targetCount);
+            const othersSelected = getRandomElements(otherSounds.map(item => ({ ...item, type: 'other' })), otherCount);
+
+            const combined = [...targetsSelected, ...othersSelected];
+            const finalShuffled = combined.sort(() => 0.5 - Math.random());
+
+            return finalShuffled.map((item, index) => ({
+                id: index,
+                emoji: item.emoji,
+                name: item.name,
+                type: item.type,
+                revealed: false,
+                rolling: false
+            }));
+        }
+
+        // 將骰子渲染到 UI 網格中
+        function renderSlots() {
+            const grid = document.getElementById('slots-grid');
+            grid.innerHTML = '';
+
+            if (currentMode === 'easy') { // 9 格網格
+                grid.className = "grid grid-cols-3 gap-2 md:gap-4 w-full max-w-xl mx-auto justify-center items-center";
+            } else { // 4 格網格
+                grid.className = "grid grid-cols-2 gap-3 md:gap-5 w-full max-w-md mx-auto justify-center items-center";
+            }
+
+            gameState.forEach((slot, index) => {
+                const card = document.createElement('div');
+                
+                if (slot.revealed) {
+                    // 根據是否為目標音設定背景色
+                    let bgCol = "bg-white border-amber-200";
+                    if (slot.type === 'target') {
+                        bgCol = "bg-rose-50/70 border-rose-200"; // 目標音顯示柔和玫瑰色
+                    }
+
+                    const emojiSizeClass = currentMode === 'easy' ? 'text-5xl sm:text-6xl md:text-7xl' : 'text-6xl sm:text-7xl md:text-8xl';
+
+                    // 完全展開的卡片為防止學生多餘的輸入，不可點擊
+                    card.className = `relative flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl border-2 md:border-4 ${bgCol} shadow-sm w-full p-2 cursor-default select-none`;
+                    
+                    card.innerHTML = `
+                        <div class="${emojiSizeClass} emoji-pop drop-shadow-sm" title="${slot.name}">${slot.emoji}</div>
+                    `;
+                } else if (slot.rolling) {
+                    card.className = "flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl bg-amber-50 border-2 md:border-4 border-amber-400/80 roll-anim shadow-inner w-full cursor-wait";
+                    
+                    const rollEmojiSize = currentMode === 'easy' ? 'text-2xl sm:text-4xl' : 'text-3xl sm:text-5xl';
+                    card.innerHTML = `
+                        <div class="${rollEmojiSize} animate-pulse filter blur-[0.5px]">🎲</div>
+                        <span class="text-[8px] sm:text-[10px] text-amber-500 font-bold mt-1">旋轉...</span>
+                    `;
+                } else {
+                    card.className = "group flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl bg-white hover:bg-amber-50/50 border-2 md:border-4 border-amber-200/60 hover:border-amber-400 cursor-pointer transition-all shadow-sm wiggle-hover";
+                    
+                    const numSize = currentMode === 'easy' ? 'w-8 h-8 sm:w-12 sm:h-12 text-sm sm:text-xl' : 'w-10 h-10 sm:w-14 sm:h-14 text-xl sm:text-2xl';
+                    card.innerHTML = `
+                        <div class="${numSize} rounded-full bg-amber-100 group-hover:bg-amber-200 flex items-center justify-center text-amber-600 font-extrabold shadow-sm transition-all">
+                            ${index + 1}
+                        </div>
+                        <span class="text-[8px] sm:text-[10px] text-slate-400 font-bold mt-1.5 uppercase tracking-wider group-hover:text-amber-700 transition-colors">點擊</span>
+                    `;
+                    card.onclick = () => rollSlot(index);
+                }
+
+                grid.appendChild(card);
+            });
+            lucide.createIcons();
+        }
+
+        // 點擊骰子時的旋轉動畫處理
+        function rollSlot(index) {
+            return new Promise((resolve) => {
+                if (gameState[index].revealed || gameState[index].rolling) {
+                    resolve();
+                    return;
+                }
+
+                gameState[index].rolling = true;
+                renderSlots();
+
+                let rolls = 0;
+                const rollInterval = setInterval(() => {
+                    playSound('roll');
+                    rolls++;
+                    if (rolls >= 4) {
+                        clearInterval(rollInterval);
+                        gameState[index].rolling = false;
+                        gameState[index].revealed = true;
+                        playSound('reveal');
+                        renderSlots();
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
+
+        // 伴隨旋轉動畫依次公開所有骰子（全開模式）
+        async function revealAll() {
+            if (isAllRevealing) return;
+            isAllRevealing = true;
+
+            // 控制按鈕暫時無效處理
+            const btnRevealAll = document.getElementById('btn-reveal-all');
+            if (btnRevealAll) {
+                btnRevealAll.disabled = true;
+                btnRevealAll.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            for (let i = 0; i < gameState.length; i++) {
+                if (!gameState[i].revealed && !gameState[i].rolling) {
+                    await rollSlot(i);
+                    // 在下一個旋轉骰子開始前加入短暫等待時間
+                    await new Promise(r => setTimeout(r, 120));
+                }
+            }
+
+            isAllRevealing = false;
+            if (btnRevealAll) {
+                btnRevealAll.disabled = false;
+                btnRevealAll.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // 重置遊戲
+        function resetGame() {
+            if (isAllRevealing) return; // 旋轉進行中不可重置
+            playSound('click');
+            gameState = generateSlotsData(currentMode);
+            renderSlots();
+        }
+
+        // 應用程式啟動時的初始設定
+        window.onload = () => {
+            lucide.createIcons();
+            gameState = generateSlotsData(currentMode);
+            renderSlots();
+        };
+    </script>
+</body>
+</html>
