@@ -72,11 +72,11 @@
         <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-4 pb-4 border-b-2 border-dashed border-amber-100">
             <!-- 模式切換 -->
             <div class="flex bg-amber-100/60 p-1 rounded-xl w-full sm:w-auto">
-                <button id="btn-easy" onclick="setMode('easy')" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-[...]
+                <button id="btn-easy" onclick="setMode('easy')" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 shadow-sm bg-white text-amber-700">
                     <span class="text-base">🌟</span>
                     容易模式 (9格)
                 </button>
-                <button id="btn-hard" onclick="setMode('hard')" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-[...]
+                <button id="btn-hard" onclick="setMode('hard')" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 text-amber-700/70 hover:bg-white/50">
                     <span class="text-base">🔥</span>
                     困難模式 (4格)
                 </button>
@@ -84,11 +84,11 @@
 
             <!-- 操作按鈕 -->
             <div class="flex gap-2 w-full sm:w-auto">
-                <button onclick="resetGame()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold px-4 py-2 rou[...]
+                <button onclick="resetGame()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-md hover:shadow-lg">
                     <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
                     重新開始
                 </button>
-                <button id="btn-reveal-all" onclick="revealAll()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white[...]
+                <button id="btn-reveal-all" onclick="revealAll()" class="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold px-4 py-2 rounded-xl transition-all shadow-md hover:shadow-lg">
                     <i data-lucide="sparkles" class="w-4 h-4"></i>
                     全開！
                 </button>
@@ -247,11 +247,11 @@
             const btnHard = document.getElementById('btn-hard');
             
             if (mode === 'easy') {
-                btnEasy.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 shadow-sm bg-whi[...]
-                btnHard.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 text-amber-700 h[...]
+                btnEasy.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 shadow-sm bg-white text-amber-700";
+                btnHard.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 text-amber-700/70 hover:bg-white/50";
             } else {
-                btnHard.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 shadow-sm bg-whi[...]
-                btnEasy.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 text-amber-700 h[...]
+                btnHard.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 shadow-sm bg-white text-amber-700";
+                btnEasy.className = "flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg font-bold text-xs md:text-sm transition-all duration-300 text-amber-700/70 hover:bg-white/50";
             }
 
             resetGame();
@@ -318,13 +318,13 @@
                     const emojiSizeClass = currentMode === 'easy' ? 'text-5xl sm:text-6xl md:text-7xl' : 'text-6xl sm:text-7xl md:text-8xl';
 
                     // 完全展開的卡片為防止學生多餘的輸入，不可點擊
-                    card.className = `relative flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl border-2 md:border-4 ${bgCol} shadow-sm w-full p-2 cursor-default [...]
+                    card.className = `relative flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl border-2 md:border-4 ${bgCol} shadow-sm w-full p-2 cursor-default transition-all`;
                     
                     card.innerHTML = `
                         <div class="${emojiSizeClass} emoji-pop drop-shadow-sm" title="${slot.name}">${slot.emoji}</div>
                     `;
                 } else if (slot.rolling) {
-                    card.className = "flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl bg-amber-50 border-2 md:border-4 border-amber-400/80 roll-anim shadow-inner[...]
+                    card.className = "flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl bg-amber-50 border-2 md:border-4 border-amber-400/80 roll-anim shadow-inner transition-all w-full";
                     
                     const rollEmojiSize = currentMode === 'easy' ? 'text-2xl sm:text-4xl' : 'text-3xl sm:text-5xl';
                     card.innerHTML = `
@@ -332,7 +332,7 @@
                         <span class="text-[8px] sm:text-[10px] text-amber-500 font-bold mt-1">旋轉...</span>
                     `;
                 } else {
-                    card.className = "group flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl bg-white hover:bg-amber-50/50 border-2 md:border-4 border-amber-200/6[...]
+                    card.className = "group flex flex-col items-center justify-center aspect-square rounded-xl md:rounded-2xl bg-white hover:bg-amber-50/50 border-2 md:border-4 border-amber-200/60 shadow-sm hover:shadow-md cursor-pointer transition-all wiggle-hover w-full";
                     
                     const numSize = currentMode === 'easy' ? 'w-8 h-8 sm:w-12 sm:h-12 text-sm sm:text-xl' : 'w-10 h-10 sm:w-14 sm:h-14 text-xl sm:text-2xl';
                     card.innerHTML = `
@@ -346,7 +346,10 @@
 
                 grid.appendChild(card);
             });
-            lucide.createIcons();
+            
+            if(window.lucide) {
+                lucide.createIcons();
+            }
         }
 
         // 點擊骰子時的旋轉動畫處理
@@ -413,7 +416,9 @@
 
         // 應用程式啟動時的初始設定
         window.onload = () => {
-            lucide.createIcons();
+            if(window.lucide) {
+                lucide.createIcons();
+            }
             gameState = generateSlotsData(currentMode);
             renderSlots();
         };
